@@ -3,7 +3,7 @@ This file contains the hyperparameters for the model.
 """
 
 # parameters for processing the dataset
-DATA_PATH = '/Users/Chip/data/cornell_movie_dialog_corpus'
+DATA_PATH = '/home/morteza/worskpace/stanford_tf_for_dl_research/13_02_chatbot/cornell_movie_dialog_corpus'
 CONVO_FILE = 'movie_conversations.txt'
 LINE_FILE = 'movie_lines.txt'
 OUTPUT_FILE = 'output_convo.txt'
@@ -45,3 +45,7 @@ LR = 0.5
 MAX_GRAD_NORM = 5.0
 
 NUM_SAMPLES = 512
+ENC_VOCAB = 24398
+DEC_VOCAB = 24668
+ENC_VOCAB = 24456
+DEC_VOCAB = 24696

@@ -11,7 +11,12 @@ import numpy as np
 
 import config
 
-def get_lines():
+############# Process raw text files
+
+def getLineId2LineTextDictionary():
+    """
+    Parse movie_lines.txt and return dictionary of lineId to lineText
+    """
     id2line = {}
     file_path = os.path.join(config.DATA_PATH, config.LINE_FILE)
     with open(file_path, 'rb') as f:
@@ -24,10 +29,10 @@ def get_lines():
                 id2line[parts[0]] = parts[4]
     return id2line
 
-def get_convos():
+def getAllConversationsList():
     """ Get conversations from the raw data """
     file_path = os.path.join(config.DATA_PATH, config.CONVO_FILE)
-    convos = []
+    conversationsList = []
     with open(file_path, 'rb') as f:
         for line in f.readlines():
             parts = line.split(' +++$+++ ')
@@ -35,26 +40,33 @@ def get_convos():
                 convo = []
                 for line in parts[3][1:-2].split(', '):
                     convo.append(line[1:-1])
-                convos.append(convo)
+                conversationsList.append(convo)
 
-    return convos
+    return conversationsList
 
-def question_answers(id2line, convos):
-    """ Divide the dataset into two sets: questions and answers. """
+###########   
+
+def conversationToQuestionAnswerPairs(id2line, conversationsList):
+    """ 
+    Divide the dataset into two sets: questions and answers. 
+    Take the first line of the conversation as question and second line as answer, and vice versa!!!  [A,B,C] becomes (A,B), (B,C)
+    """
     questions, answers = [], []
-    for convo in convos:
+    i = 0
+    for convo in conversationsList:
         for index, line in enumerate(convo[:-1]):
             questions.append(id2line[convo[index]])
             answers.append(id2line[convo[index + 1]])
+
     assert len(questions) == len(answers)
     return questions, answers
 
-def prepare_dataset(questions, answers):
+def createTrainTestDatasets(questions, answers):
     # create path to store all the train & test encoder & decoder
     make_dir(config.PROCESSED_PATH)
     
-    # random convos to create the test set
-    test_ids = random.sample([i for i in range(len(questions))],config.TESTSET_SIZE)
+    # random conversationsList to create the test set
+    test_ids = random.sample([i for i in range(len(questions))], config.TESTSET_SIZE)
     
     filenames = ['train.enc', 'train.dec', 'test.enc', 'test.dec']
     files = []
@@ -159,22 +171,6 @@ def token2id(data, mode):
             ids.append(vocab['<\s>'])
         out_file.write(' '.join(str(id_) for id_ in ids) + '\n')
 
-def prepare_raw_data():
-    print('Preparing raw data into train set and test set ...')
-    id2line = get_lines()
-    convos = get_convos()
-    questions, answers = question_answers(id2line, convos)
-    prepare_dataset(questions, answers)
-
-def process_data():
-    print('Preparing data to be model-ready ...')
-    build_vocab('train.enc')
-    build_vocab('train.dec')
-    token2id('train', 'enc')
-    token2id('train', 'dec')
-    token2id('test', 'enc')
-    token2id('test', 'dec')
-
 def load_data(enc_filename, dec_filename, max_training_size=None):
     encode_file = open(os.path.join(config.PROCESSED_PATH, enc_filename), 'rb')
     decode_file = open(os.path.join(config.PROCESSED_PATH, dec_filename), 'rb')
@@ -237,6 +233,22 @@ def get_batch(data_bucket, bucket_id, batch_size=1):
         batch_masks.append(batch_mask)
     return batch_encoder_inputs, batch_decoder_inputs, batch_masks
 
-if __name__ == '__main__':
-    prepare_raw_data()
-    process_data()
+#############
+
+print('Preparing raw data into train set and test set ...')
+lineId2LineTextDictionary = getLineId2LineTextDictionary()
+conversationsList = getAllConversationsList()
+questions, answers = conversationToQuestionAnswerPairs(lineId2LineTextDictionary, conversationsList)
+
+for i in range(1,100):
+    print (questions[i] + "    __________   " + answers[i])
+
+createTrainTestDatasets(questions, answers)
+
+print('Preparing data to be model-ready ...')
+build_vocab('train.enc')
+build_vocab('train.dec')
+token2id('train', 'enc')
+token2id('train', 'dec')
+token2id('test', 'enc')
+token2id('test', 'dec')
