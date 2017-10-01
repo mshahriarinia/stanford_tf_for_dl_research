@@ -2,21 +2,28 @@
 This file contains the hyperparameters for the model.
 """
 
-# parameters for processing the dataset
+# Dataset files info
 DATA_PATH = '/home/morteza/worskpace/stanford_tf_for_dl_research/13_02_chatbot/cornell_movie_dialog_corpus'
 CONVO_FILE = 'movie_conversations.txt'
 LINE_FILE = 'movie_lines.txt'
 OUTPUT_FILE = 'output_convo.txt'
+
+# Generated training and test directory
 PROCESSED_PATH = 'processed'
+
+# Generated model checkpoints directory
 CPT_PATH = 'checkpoints'
+
 
 THRESHOLD = 2
 
+# LSTM custom tokens Ids
 PAD_ID = 0
 UNK_ID = 1
 START_ID = 2
 EOS_ID = 3
 
+# Test set size
 TESTSET_SIZE = 25000
 
 # model parameters
@@ -37,6 +44,7 @@ These buckets size seem to work the best
 # BUCKETS = [(8, 10), (12, 14), (16, 19)]
 BUCKETS = [(16, 19)]
 
+# Network parameters
 NUM_LAYERS = 3
 HIDDEN_SIZE = 256
 BATCH_SIZE = 64
