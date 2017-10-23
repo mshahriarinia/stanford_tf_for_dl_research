@@ -11,16 +11,6 @@ HUMAN ++++ i'm chip<br>
 BOT ++++ please .<br>
 HUMAN ++++ please what?<br>
 BOT ++++ i don ' t know what to say .<br>
-HUMAN ++++ where are you from?<br>
-BOT ++++ i ' m fine .<br>
-HUMAN ++++ are you a man?<br>
-BOT ++++ i ' m a little .<br>
-HUMAN ++++ what's your name?<br>
-BOT ++++ chris -<br>
-HUMAN ++++ chris who?<br>
-BOT ++++ cornelius .<br>
-HUMAN ++++ so i guess you're a guy.<br>
-BOT ++++ i am .<br>
 HUMAN ++++ okay<br>
 BOT ++++ okay ?<br>
 HUMAN ++++ do you have a girlfriend?<br>
@@ -33,12 +23,59 @@ See output_convo.txt for more sample conversations.
 ##########################################
 
 # Setup
-- Create a data folder and download Cornell Movie-Dialogs Corpus https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html
-- Unzip
-- $ python data.py     # This will pre-process the Cornell dataset
-- $ python chatbot.py --mode [train/chat] <br>
-  - If mode is train, then you train the chatbot. By default, the model will restore the previously trained weights (if there is any) and continue training up on that.
+Create a data folder
+Download Cornell Movie-Dialogs Corpus https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html
+Unzip
+$ python data.py     # This will pre-process the Cornell dataset
+$ python chatbot.py --mode [train/chat] <br>
+  - mode:
+   - train: trains the model. 
+    - By default, the model will restore the previously trained weights (if there is any) and continue training up on that.
     - To start training from scratch, delete all the checkpoints in the checkpoints folder.
-    - If the mode is chat, you'll go into the interaction mode with the bot.
+   - chat: Interaction mode with the bot.
 
-By default, all the conversations you have with the chatbot will be written into the file output_convo.txt in the processed folder.
+All the conversations you have with the chatbot will be written into the file output_convo.txt in the processed folder.
+
+############################################
+
+# Data
+- 220,579 conversational exchanges between 10,292 pairs of movie characters
+- 9,035 characters from 617 movies
+- 304,713 utterances
+- In all files the field separator is " +++$+++ "
+
+## File:
+- Movies (movie_titles_metadata.txt)
+	- Fields: 
+		- movieID
+		- movie title
+		- year
+	   	- IMDB rating
+		- num of IMDB votes
+ 		- genres ['genre1','genre2',É,'genreN']
+
+- Characters (movie_characters_metadata.txt)       
+	- Fields:
+		- characterID
+		- character name
+		- movieID
+		- movie title
+		- gender ("?" for unlabeled cases)
+		- position in credits ("?" for unlabeled cases) 
+
+- Utterances (movie_lines.txt)
+	- Fields:
+		- lineID
+		- characterID (who uttered this phrase)
+		- movieID
+		- character name
+		- text of the utterance
+
+- Conversations
+    - movie_conversations.txt
+	- fields
+		- characterID of the first character in the conversation
+		- characterID of the second character in the conversation
+		- movieID
+		- list of conversation utterances in chronological order
+			to be matched with movie_lines.txt to reconstruct the actual content
