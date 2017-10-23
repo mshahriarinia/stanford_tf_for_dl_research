@@ -96,7 +96,7 @@ def make_dir(path):
     except OSError:
         pass
 
-def basic_tokenizer(line, normalize_digits=True):
+def tokenize(line, normalize_digits=True):
     """ 
     Tokenize text into tokens.
     """
@@ -130,7 +130,7 @@ def build_vocab(filename, normalize_digits=True):
     vocab = {}
     with open(in_path, 'rb') as f:
         for line in f.readlines():
-            for token in basic_tokenizer(line):
+            for token in tokenize(line):
                 if not token in vocab:
                     vocab[token] = 0
                 vocab[token] += 1
@@ -150,16 +150,27 @@ def build_vocab(filename, normalize_digits=True):
             index += 1
 
 def load_vocab(vocab_path):
+    """
+    Load vocabs file and 
+    return list of all words and dictionary of each word to its index
+    """
     with open(vocab_path, 'rb') as f:
-        words = f.read().splitlines() # get list of all words
+        words = f.read().splitlines() 
+    # get list of all words and dictionary of each word to its index
     return words, {words[i]: i for i in range(len(words))}
 
-def sentence2id(vocab, line):
-    return [vocab.get(token, vocab['<unk>']) for token in basic_tokenizer(line)]
+def stringToTokenIds(vocab, line):
+    """
+    Convert a sentence to id of its tokens
+    """
+    return [vocab.get(token, vocab['<unk>']) for token in tokenize(line)]
 
-def token2id(data, mode):
-    """ Convert all the tokens in the data into their corresponding
-    index in the vocabulary. """
+def convertDatasetToTokenIds(data, mode):
+    """ 
+    Convert all the tokens in the data into their corresponding
+    index in the vocabulary. 
+    A file with same name _.ids will be created
+    """
     vocab_path = 'vocab.' + mode
     in_path = data + '.' + mode
     out_path = data + '_ids.' + mode
@@ -174,8 +185,8 @@ def token2id(data, mode):
             ids = [vocab['<s>']]
         else:
             ids = []
-        ids.extend(sentence2id(vocab, line))
-        # ids.extend([vocab.get(token, vocab['<unk>']) for token in basic_tokenizer(line)])
+        ids.extend(stringToTokenIds(vocab, line))
+        # ids.extend([vocab.get(token, vocab['<unk>']) for token in tokenize(line)])
         if mode == 'dec':
             ids.append(vocab['<\s>'])
         out_file.write(' '.join(str(id_) for id_ in ids) + '\n')
@@ -257,7 +268,7 @@ createTrainTestEncoderDecoderDataSets(questions, answers)
 print('Preparing data to be model-ready ...')
 build_vocab('train.enc')
 build_vocab('train.dec')
-token2id('train', 'enc')
-token2id('train', 'dec')
-token2id('test', 'enc')
-token2id('test', 'dec')
+convertDatasetToTokenIds('train', 'enc')
+convertDatasetToTokenIds('train', 'dec')
+convertDatasetToTokenIds('test', 'enc')
+convertDatasetToTokenIds('test', 'dec')
