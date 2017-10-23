@@ -18,7 +18,7 @@ def getLineId2LineTextDictionary():
     Parse movie_lines.txt and return dictionary of lineId to lineText
     """
     id2line = {}
-    file_path = os.path.join(config.DATA_PATH, config.LINE_FILE)
+    file_path = os.path.join(config.DATA_PATH, 'movie_lines.txt')
     with open(file_path, 'rb') as f:
         lines = f.readlines()
         for line in lines:
@@ -29,9 +29,9 @@ def getLineId2LineTextDictionary():
                 id2line[parts[0]] = parts[4]
     return id2line
 
-def getAllConversationsList():
-    """ Get conversations from the raw data """
-    file_path = os.path.join(config.DATA_PATH, config.CONVO_FILE)
+def getConversationsList():
+    """ Get list of conversations from movie_conversations.txt """
+    file_path = os.path.join(config.DATA_PATH, 'movie_conversations.txt')
     conversationsList = []
     with open(file_path, 'rb') as f:
         for line in f.readlines():
@@ -61,8 +61,11 @@ def conversationToQuestionAnswerPairs(id2line, conversationsList):
     assert len(questions) == len(answers)
     return questions, answers
 
-def createTrainTestDatasets(questions, answers):
-    # create path to store all the train & test encoder & decoder
+def createTrainTestEncoderDecoderDataSets(questions, answers):
+    """ 
+    Create train & test encoder & decoder files.
+    enc / dec means encoder input / decoder output (question / answer)
+    """
     make_dir(config.PROCESSED_PATH)
     
     # random conversationsList to create the test set
@@ -85,15 +88,19 @@ def createTrainTestDatasets(questions, answers):
         file.close()
 
 def make_dir(path):
-    """ Create a directory if there isn't one already. """
+    """ 
+    Create a directory if there isn't one already. 
+    """
     try:
         os.mkdir(path)
     except OSError:
         pass
 
 def basic_tokenizer(line, normalize_digits=True):
-    """ A basic tokenizer to tokenize text into tokens.
-    Feel free to change this to suit your need. """
+    """ 
+    Tokenize text into tokens.
+    """
+    # remove placeholders
     line = re.sub('<u>', '', line)
     line = re.sub('</u>', '', line)
     line = re.sub('\[', '', line)
@@ -105,15 +112,21 @@ def basic_tokenizer(line, normalize_digits=True):
         for token in re.split(_WORD_SPLIT, fragment):
             if not token:
                 continue
+            # replace all digits to # character
             if normalize_digits:
                 token = re.sub(_DIGIT_RE, b'#', token)
             words.append(token)
     return words
 
 def build_vocab(filename, normalize_digits=True):
+    """
+    Build file of vocabularies that occur more than config.THRESHOLD
+    in the dataset
+    """
     in_path = os.path.join(config.PROCESSED_PATH, filename)
     out_path = os.path.join(config.PROCESSED_PATH, 'vocab.{}'.format(filename[-3:]))
 
+    # Build dictionary of each vocabulary to its frequency 
     vocab = {}
     with open(in_path, 'rb') as f:
         for line in f.readlines():
@@ -122,6 +135,7 @@ def build_vocab(filename, normalize_digits=True):
                     vocab[token] = 0
                 vocab[token] += 1
 
+    # Sort dictionary by count and get keys ordered by count
     sorted_vocab = sorted(vocab, key=vocab.get, reverse=True)
     with open(out_path, 'wb') as f:
         f.write('<pad>' + '\n')
@@ -131,18 +145,13 @@ def build_vocab(filename, normalize_digits=True):
         index = 4
         for word in sorted_vocab:
             if vocab[word] < config.THRESHOLD:
-                with open('config.py', 'ab') as cf:
-                    if filename[-3:] == 'enc':
-                        cf.write('ENC_VOCAB = ' + str(index) + '\n')
-                    else:
-                        cf.write('DEC_VOCAB = ' + str(index) + '\n')
                 break
             f.write(word + '\n')
             index += 1
 
 def load_vocab(vocab_path):
     with open(vocab_path, 'rb') as f:
-        words = f.read().splitlines()
+        words = f.read().splitlines() # get list of all words
     return words, {words[i]: i for i in range(len(words))}
 
 def sentence2id(vocab, line):
@@ -237,13 +246,13 @@ def get_batch(data_bucket, bucket_id, batch_size=1):
 
 print('Preparing raw data into train set and test set ...')
 lineId2LineTextDictionary = getLineId2LineTextDictionary()
-conversationsList = getAllConversationsList()
+conversationsList = getConversationsList()
 questions, answers = conversationToQuestionAnswerPairs(lineId2LineTextDictionary, conversationsList)
 
 for i in range(1,100):
     print (questions[i] + "    __________   " + answers[i])
 
-createTrainTestDatasets(questions, answers)
+createTrainTestEncoderDecoderDataSets(questions, answers)
 
 print('Preparing data to be model-ready ...')
 build_vocab('train.enc')
