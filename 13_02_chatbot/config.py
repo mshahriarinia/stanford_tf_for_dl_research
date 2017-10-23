@@ -4,8 +4,8 @@ This file contains the hyperparameters for the model.
 
 # Dataset files info
 DATA_PATH = '/home/morteza/worskpace/stanford_tf_for_dl_research/13_02_chatbot/cornell_movie_dialog_corpus'
-CONVO_FILE = 'movie_conversations.txt'
-LINE_FILE = 'movie_lines.txt'
+# CONVO_FILE = 'movie_conversations.txt'
+# LINE_FILE = 'movie_lines.txt'
 OUTPUT_FILE = 'output_convo.txt'
 
 # Generated training and test directory
@@ -14,7 +14,7 @@ PROCESSED_PATH = 'processed'
 # Generated model checkpoints directory
 CPT_PATH = 'checkpoints'
 
-
+# min count vocab threshold otherwise <unk>
 THRESHOLD = 2
 
 # LSTM custom tokens Ids
