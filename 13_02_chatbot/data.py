@@ -194,9 +194,17 @@ def convertDatasetFilesToTokenIds(data, mode):
         out_file.write(' '.join(str(id_) for id_ in ids) + '\n')
 
 def load_data(enc_filename, dec_filename, max_training_size=None):
+    """
+    Load questions and answers files
+    TODO: buckets
+    """
     encode_file = open(os.path.join(config.PROCESSED_PATH, enc_filename), 'rb')
     decode_file = open(os.path.join(config.PROCESSED_PATH, dec_filename), 'rb')
     encode, decode = encode_file.readline(), decode_file.readline()
+
+    # for each bucket, create an empty array
+    # each bucket represents (min_string_length, max_string_length) that should belong to same bucket
+    # used for mini-batching
     data_buckets = [[] for _ in config.BUCKETS]
     i = 0
     while encode and decode:
@@ -213,10 +221,15 @@ def load_data(enc_filename, dec_filename, max_training_size=None):
     return data_buckets
 
 def _pad_input(input_, size):
+    """
+    Pad a string up to maximum |size|
+    """
     return input_ + [config.PAD_ID] * (size - len(input_))
 
 def _reshape_batch(inputs, size, batch_size):
-    """ Create batch-major inputs. Batch inputs are just re-indexed inputs
+    """ 
+    Create batch-major inputs. Batch inputs are just re-indexed inputs
+    TODO
     """
     batch_inputs = []
     for length_id in range(size):
@@ -256,15 +269,14 @@ def get_batch(data_bucket, bucket_id, batch_size=1):
     return batch_encoder_inputs, batch_decoder_inputs, batch_masks
 
 #############
+#############
+#############
+#############
 
 print('Preparing raw data into train set and test set ...')
 lineId2LineTextDictionary = getLineId2LineTextDictionary()
 conversationsList = getConversationsList()
 questions, answers = conversationToQuestionAnswerPairs(lineId2LineTextDictionary, conversationsList)
-
-for i in range(1,100):
-    print (questions[i] + "    __________   " + answers[i])
-
 createTrainTestEncoderDecoderDataSets(questions, answers)
 
 print('Preparing data to be model-ready ...')
@@ -274,3 +286,6 @@ convertDatasetFilesToTokenIds('train', 'enc')
 convertDatasetFilesToTokenIds('train', 'dec')
 convertDatasetFilesToTokenIds('test', 'enc')
 convertDatasetFilesToTokenIds('test', 'dec')
+
+for i in range(1,100):
+    print (questions[i] + "    __________   " + answers[i])

@@ -35,6 +35,8 @@ TESTSET_SIZE = 25000
 426, 444, 388, 349, 337]
 These buckets size seem to work the best
 """
+
+# Buckets that spcify which sentence lengths ranges should be co-grouped into the same bucket for mini-batching 
 # [19530, 17449, 17585, 23444, 22884, 16435, 17085, 18291, 18931]
 # BUCKETS = [(6, 8), (8, 10), (10, 12), (13, 15), (16, 19), (19, 22), (23, 26), (29, 32), (39, 44)]
 
