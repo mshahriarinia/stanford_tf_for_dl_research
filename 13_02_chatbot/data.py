@@ -195,24 +195,36 @@ def convertDatasetFilesToTokenIds(data, mode):
 
 def load_data(enc_filename, dec_filename, max_training_size=None):
     """
-    Load questions and answers files
-    TODO: buckets
+    - Load questions and answers files. 
+    - Each config.BUCKETS would collect QA pairs that conform to (question_max_size, answer_max_size) 
+    -  For each question/answer pair, find the bucket tuple that they both belong to,
+           break the for loop once found and go for next line
+
+    returns data_buckets
     """
     encode_file = open(os.path.join(config.PROCESSED_PATH, enc_filename), 'rb')
     decode_file = open(os.path.join(config.PROCESSED_PATH, dec_filename), 'rb')
     encode, decode = encode_file.readline(), decode_file.readline()
 
-    # for each bucket, create an empty array
-    # each bucket represents (min_string_length, max_string_length) that should belong to same bucket
+    # each bucket is a tuple of (encode_max_size, decode_max_size) that should belong to same bucket
     # used for mini-batching
+    #
+    # For each bucket, create an empty array
     data_buckets = [[] for _ in config.BUCKETS]
     i = 0
+
+    # For each question/answer pair, find the bucket tuple that they both belong to,
+    # break the for loop once found
     while encode and decode:
         if (i + 1) % 10000 == 0:
             print("Bucketing conversation number", i)
-        encode_ids = [int(id_) for id_ in encode.split()]
-        decode_ids = [int(id_) for id_ in decode.split()]
+        
+        # Get array of ids for question / answer pair
+        encode_ids = [int(id_) for id_ in encode.split()] # Get array of ids that are in the question
+        decode_ids = [int(id_) for id_ in decode.split()] # Get array of ids that are in the answer
+        
         for bucket_id, (encode_max_size, decode_max_size) in enumerate(config.BUCKETS):
+            # find question / answer pairs that comply to bucket string length limits
             if len(encode_ids) <= encode_max_size and len(decode_ids) <= decode_max_size:
                 data_buckets[bucket_id].append([encode_ids, decode_ids])
                 break
