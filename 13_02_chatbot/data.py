@@ -165,11 +165,13 @@ def stringToTokenIds(vocab, line):
     """
     return [vocab.get(token, vocab['<unk>']) for token in tokenize(line)]
 
-def convertDatasetToTokenIds(data, mode):
+def convertDatasetFilesToTokenIds(data, mode):
     """ 
     Convert all the tokens in the data into their corresponding
     index in the vocabulary. 
     A file with same name _.ids will be created
+
+    <s> will mark beginning of utterance and </s> marks end of utterance
     """
     vocab_path = 'vocab.' + mode
     in_path = data + '.' + mode
@@ -268,7 +270,7 @@ createTrainTestEncoderDecoderDataSets(questions, answers)
 print('Preparing data to be model-ready ...')
 build_vocab('train.enc')
 build_vocab('train.dec')
-convertDatasetToTokenIds('train', 'enc')
-convertDatasetToTokenIds('train', 'dec')
-convertDatasetToTokenIds('test', 'enc')
-convertDatasetToTokenIds('test', 'dec')
+convertDatasetFilesToTokenIds('train', 'enc')
+convertDatasetFilesToTokenIds('train', 'dec')
+convertDatasetFilesToTokenIds('test', 'enc')
+convertDatasetFilesToTokenIds('test', 'dec')
